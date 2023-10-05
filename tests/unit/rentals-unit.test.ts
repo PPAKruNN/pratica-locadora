@@ -5,6 +5,44 @@ import { RentalInput } from "../../src/protocols/index";
 import rentalsService from "../../src/services/rentals-service";
 
 describe("Rentals Service Unit Tests", () => {
+  it("Should return movie not found", async () => {
+    const userId: number = 1;
+    jest.spyOn(usersRepository, "getById").mockImplementationOnce((): any => {
+      return {
+        id: userId
+      }
+    });
+
+    jest.spyOn(rentalsRepository, "getRentalsByUserId").mockImplementationOnce((): any => {
+      return [ ];
+    });
+
+    jest.spyOn(moviesRepository, "getById").mockImplementation((): any => {
+      return false;
+    });
+
+    const rentalInput: RentalInput = {
+      userId: 1,
+      moviesId: [ 3, 1, 2, 25 ]
+    };
+
+    const resultData = {
+      id: 1,
+      userId,
+      movies: rentalInput.moviesId,
+    };
+    
+    jest.spyOn(rentalsRepository, "createRental").mockImplementationOnce((): any => {
+      return resultData
+    });
+    
+    const promise = rentalsService.createRental(rentalInput);
+    expect(promise).rejects.toEqual({
+      name: "NotFoundError",
+      message: "Movie not found."
+    });
+  });
+
   it("Should return the rental when everything is ok", async () => {
     const userId: number = 1;
     jest.spyOn(usersRepository, "getById").mockImplementationOnce((): any => {
